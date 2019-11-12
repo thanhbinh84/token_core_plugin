@@ -31,10 +31,21 @@ android {
     lintOptions {
         disable 'InvalidPackage'
     }
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'armeabi-v7a', 'armeabi', 'armeabi-v7a', 'mips', 'mips64', 'arm64-v8a','arm'
+            universalApk true
+        }
+    }
+    packagingOptions {
+        exclude 'lib/x86_64/darwin/libscrypt.dylib'
+    }
 }
 
 dependencies {
     api 'com.lhalcyon:tokencore:0.1.6'
     testImplementation 'junit:junit:4.12'
-
+    implementation 'com.github.consenlabs:token-core-android:v0.1'
 }

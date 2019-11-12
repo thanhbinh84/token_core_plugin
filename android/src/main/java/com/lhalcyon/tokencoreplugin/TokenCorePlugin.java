@@ -1,5 +1,7 @@
 package com.lhalcyon.tokencoreplugin;
 
+import android.app.Activity;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lhalcyon.tokencore.foundation.utils.MnemonicUtil;
@@ -30,7 +32,13 @@ import com.lhalcyon.tokencoreplugin.model.FlutterExWallet;
 import com.lhalcyon.tokencoreplugin.util.KeystoreUtil;
 
 import org.bitcoinj.crypto.ChildNumber;
+import org.consenlabs.tokencore.wallet.Identity;
+import org.consenlabs.tokencore.wallet.KeystoreStorage;
+import org.consenlabs.tokencore.wallet.Wallet;
+import org.consenlabs.tokencore.wallet.WalletManager;
+import org.consenlabs.tokencore.wallet.model.Metadata;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,20 +48,23 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
-
 /**
  * TokenCorePlugin
  */
 public class TokenCorePlugin implements MethodCallHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
+    private final Activity activity;
 
+    private TokenCorePlugin(Activity activity) {
+        this.activity = activity;
+    }
     /**
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "realm.lhalcyon.com/token_core_plugin");
-        channel.setMethodCallHandler(new TokenCorePlugin());
+        channel.setMethodCallHandler(new TokenCorePlugin(registrar.activity()));
     }
 
     @Override
@@ -76,7 +87,7 @@ public class TokenCorePlugin implements MethodCallHandler {
                 onExportMnemonic(call, result);
                 break;
             case CallMethod.exportPrivateKey:
-                onExportPrivateKey(call, result);
+                onExportPrivateKey(call, result, activity);
                 break;
             case CallMethod.importPrivateKey:
                 onImportPrivateKey(call, result);
@@ -138,7 +149,6 @@ public class TokenCorePlugin implements MethodCallHandler {
         } catch (Exception e) {
             e.printStackTrace();
             result.error(ErrorCode.SIGN_ERROR, e.getMessage(), null);
-
         }
     }
 
@@ -178,17 +188,49 @@ public class TokenCorePlugin implements MethodCallHandler {
 
     }
 
-    private void onExportPrivateKey(MethodCall call, Result result) {
+//    private void onExportPrivateKey(MethodCall call, Result result) {
+//        try {
+//            if (isArgumentIllegal(call, result)) {
+//                return;
+//            }
+//            Object arguments = call.arguments;
+//            String json = objectMapper.writeValueAsString(arguments);
+//            ExportArgs args = objectMapper.readValue(json, ExportArgs.class);
+//
+//            ExWallet wallet = mapKeystore2Wallet(args.keystore, args.password);
+//            String privateKey = wallet.exportPrivateKey(args.password);
+//            result.success(privateKey);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            result.error(ErrorCode.EXPORT_ERROR, "export error , " + e.getMessage(), null);
+//        }
+//    }
+
+    private void onExportPrivateKey(MethodCall call, Result result, final Activity activity) {
         try {
             if (isArgumentIllegal(call, result)) {
                 return;
             }
+
             Object arguments = call.arguments;
             String json = objectMapper.writeValueAsString(arguments);
             ExportArgs args = objectMapper.readValue(json, ExportArgs.class);
 
             ExWallet wallet = mapKeystore2Wallet(args.keystore, args.password);
-            String privateKey = wallet.exportPrivateKey(args.password);
+
+            WalletManager.storage = new KeystoreStorage() {
+                @Override
+                public File getKeystoreDir() {
+                    return activity.getFilesDir();
+                }
+            };
+            WalletManager.scanWallets();
+            String mnemonic = "";
+            Identity identity = Identity.recoverIdentity(mnemonic,null,args.password, args.password, org.consenlabs.tokencore.wallet.model.Network.TESTNET, Metadata.P2WPKH);
+            Wallet ethereumWallet = identity.getWallets().get(0);
+            String privateKey = WalletManager.exportPrivateKey(ethereumWallet.getId(), "T0ko1n");
+
+
             result.success(privateKey);
         } catch (Exception e) {
             e.printStackTrace();

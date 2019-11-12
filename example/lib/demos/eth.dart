@@ -23,7 +23,7 @@ class ETHDemo extends StatelessWidget {
   }
 
   Future onItemTapped(int index) async {
-    var password = 'qq123456';
+    var password = '';
     switch (index) {
       case 0:
         try {
@@ -74,15 +74,16 @@ class ETHDemo extends StatelessWidget {
         break;
       case 4:
         try {
+          var mnemonic = "";
           ExIdentity identity = await TokenCorePlugin.recoverIdentity(
               password,
               Network.testNet,
-              SegWit.none,
-              "reward left manage decorate joke milk tomorrow spoil wrist regular disease correct");
-          var keystore = identity.keystore;
-          var mnemonic =
-          await TokenCorePlugin.exportMnemonic(keystore, password);
-          print(mnemonic);
+              SegWit.p2wpkh,
+              mnemonic);
+          var eth = identity.getEthereumWallet();
+          var keystore = eth.keystore;
+          var pEth = await TokenCorePlugin.exportPrivateKey(keystore, password);
+          print('pEth ' + pEth);
         } on PlatformException catch (e) {
           print(e.toString());
         }
