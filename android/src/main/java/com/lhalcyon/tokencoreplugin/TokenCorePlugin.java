@@ -228,7 +228,7 @@ public class TokenCorePlugin implements MethodCallHandler {
             String mnemonic = "";
             Identity identity = Identity.recoverIdentity(mnemonic,null,args.password, args.password, org.consenlabs.tokencore.wallet.model.Network.TESTNET, Metadata.P2WPKH);
             Wallet ethereumWallet = identity.getWallets().get(0);
-            String privateKey = WalletManager.exportPrivateKey(ethereumWallet.getId(), "T0ko1n");
+            String privateKey = WalletManager.exportPrivateKey(ethereumWallet.getId(), args.password);
 
 
             result.success(privateKey);
