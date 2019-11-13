@@ -23,7 +23,7 @@ class ETHDemo extends StatelessWidget {
   }
 
   Future onItemTapped(int index) async {
-    var password = '';
+    var password = 'qq123456';
     switch (index) {
       case 0:
         try {
@@ -74,7 +74,7 @@ class ETHDemo extends StatelessWidget {
         break;
       case 4:
         try {
-          var mnemonic = "";
+          var mnemonic = "reward left manage decorate joke milk tomorrow spoil wrist regular disease correct";
           ExIdentity identity = await TokenCorePlugin.recoverIdentity(
               password,
               Network.testNet,

@@ -34,9 +34,7 @@ import com.lhalcyon.tokencoreplugin.util.KeystoreUtil;
 import org.bitcoinj.crypto.ChildNumber;
 import org.consenlabs.tokencore.wallet.Identity;
 import org.consenlabs.tokencore.wallet.KeystoreStorage;
-import org.consenlabs.tokencore.wallet.Wallet;
 import org.consenlabs.tokencore.wallet.WalletManager;
-import org.consenlabs.tokencore.wallet.model.Metadata;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -188,24 +186,6 @@ public class TokenCorePlugin implements MethodCallHandler {
 
     }
 
-//    private void onExportPrivateKey(MethodCall call, Result result) {
-//        try {
-//            if (isArgumentIllegal(call, result)) {
-//                return;
-//            }
-//            Object arguments = call.arguments;
-//            String json = objectMapper.writeValueAsString(arguments);
-//            ExportArgs args = objectMapper.readValue(json, ExportArgs.class);
-//
-//            ExWallet wallet = mapKeystore2Wallet(args.keystore, args.password);
-//            String privateKey = wallet.exportPrivateKey(args.password);
-//            result.success(privateKey);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            result.error(ErrorCode.EXPORT_ERROR, "export error , " + e.getMessage(), null);
-//        }
-//    }
-
     private void onExportPrivateKey(MethodCall call, Result result, final Activity activity) {
         try {
             if (isArgumentIllegal(call, result)) {
@@ -225,12 +205,11 @@ public class TokenCorePlugin implements MethodCallHandler {
                 }
             };
             WalletManager.scanWallets();
-            String mnemonic = "";
-            Identity identity = Identity.recoverIdentity(mnemonic,null,args.password, args.password, org.consenlabs.tokencore.wallet.model.Network.TESTNET, Metadata.P2WPKH);
-            Wallet ethereumWallet = identity.getWallets().get(0);
-            String privateKey = WalletManager.exportPrivateKey(ethereumWallet.getId(), args.password);
+            String mnemonic = wallet.exportMnemonic(args.password).getMnemonic();
+            Identity identity = Identity.recoverIdentity(mnemonic,null,args.password, args.password,
+                    wallet.getMetadata().getNetwork().getValue(), wallet.getMetadata().getSegWit().getValue());
 
-
+            String privateKey = WalletManager.exportPrivateKey(identity.getWallets().get(0).getId(), args.password);
             result.success(privateKey);
         } catch (Exception e) {
             e.printStackTrace();
