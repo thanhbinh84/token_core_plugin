@@ -45,7 +45,8 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.flutter.plugin.common.PluginRegistry;
+
 /**
  * TokenCorePlugin
  */
@@ -60,7 +61,7 @@ public class TokenCorePlugin implements MethodCallHandler {
     /**
      * Plugin registration.
      */
-    public static void registerWith(Registrar registrar) {
+    public static void registerWith(PluginRegistry.Registrar registrar) {
         final MethodChannel channel = new MethodChannel(registrar.messenger(), "realm.lhalcyon.com/token_core_plugin");
         channel.setMethodCallHandler(new TokenCorePlugin(registrar.activity()));
     }
@@ -85,7 +86,7 @@ public class TokenCorePlugin implements MethodCallHandler {
                 onExportMnemonic(call, result);
                 break;
             case CallMethod.exportPrivateKey:
-                onExportPrivateKey(call, result, activity);
+                onExportPrivateKey(call, result);
                 break;
             case CallMethod.importPrivateKey:
                 onImportPrivateKey(call, result);
@@ -186,7 +187,7 @@ public class TokenCorePlugin implements MethodCallHandler {
 
     }
 
-    private void onExportPrivateKey(MethodCall call, Result result, final Activity activity) {
+    private void onExportPrivateKey(MethodCall call, Result result) {
         try {
             if (isArgumentIllegal(call, result)) {
                 return;
